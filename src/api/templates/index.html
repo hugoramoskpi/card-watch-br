@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Watch BR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen p-6">
+  <header class="mb-8">
+    <h1 class="text-3xl font-bold text-purple-400">Card Watch BR</h1>
+    <p class="text-gray-400 mt-1">Monitor de promoções de cartões black e premium</p>
+  </header>
+
+  <div class="flex gap-3 mb-6">
+    <select id="filterConf" onchange="loadPromos()" class="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm">
+      <option value="">Todas as confianças</option>
+      <option value="3">Alta (3 fontes)</option>
+      <option value="2">Média (2 fontes)</option>
+      <option value="1">Baixa (1 fonte)</option>
+    </select>
+    <button onclick="triggerCycle()" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm font-medium">
+      Buscar Agora
+    </button>
+  </div>
+
+  <div id="promos" class="space-y-4"></div>
+
+  <script>
+    async function loadPromos() {
+      const conf = document.getElementById('filterConf').value;
+      const res = await fetch('/api/promotions');
+      const promos = await res.json();
+      const filtered = conf ? promos.filter(p => String(p.confidence) === conf) : promos;
+      const confLabel = {1:'Baixa',2:'Média',3:'Alta'};
+      document.getElementById('promos').innerHTML = filtered.length === 0
+        ? '<p class="text-gray-500">Nenhuma promoção encontrada.</p>'
+        : filtered.map(p => `
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-xs text-gray-500">${confLabel[p.confidence] || ''} — ${p.sources.join(' · ')}</span>
+                <h2 class="text-lg font-semibold text-white mt-1">${p.card_name}</h2>
+                <p class="text-gray-300 mt-1">${p.summary}</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  ${p.raw_urls.slice(0,2).map(u => `<a href="${u}" target="_blank" class="text-purple-400 text-xs hover:underline">Ver fonte</a>`).join('')}
+                </div>
+              </div>
+              <button onclick="dismiss('${p.id}')" class="text-gray-600 hover:text-red-400 text-xs ml-4">Descartar</button>
+            </div>
+          </div>`).join('');
+    }
+
+    async function dismiss(id) {
+      await fetch('/api/promotions/' + id + '/dismiss', {method:'POST'});
+      loadPromos();
+    }
+
+    async function triggerCycle() {
+      await fetch('/api/cycles/trigger', {method:'POST'});
+      alert('Ciclo de busca iniciado! Aguarde alguns minutos.');
+    }
+
+    loadPromos();
+    setInterval(loadPromos, 60000);
+  </script>
+</body>
+</html>
