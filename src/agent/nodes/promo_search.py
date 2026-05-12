@@ -1,5 +1,6 @@
 from ..state import AgentState, RawPromo
-from ...tools.reddit_tool import search_reddit_for_black_cards
+from ...tools.rss_tool import search_rss_for_black_cards
+from ...tools.youtube_tool import search_youtube_for_black_cards
 from ...tools.brave_tool import search_brave_for_promotions
 from ...tools.scraper_tool import scrape_hardmob_for_black_cards
 
@@ -39,8 +40,19 @@ def promo_search_node(state: AgentState) -> AgentState:
                     source_name=r["source_name"],
                 ))
 
-        reddit_results = search_reddit_for_black_cards.invoke({"query": query})
-        for r in reddit_results:
+        rss_results = search_rss_for_black_cards.invoke({"query": query})
+        for r in rss_results:
+            text = f"{r['title']} {r['text']}"
+            if _is_promo_related(text):
+                raw_promos.append(RawPromo(
+                    card_name=card_name,
+                    text=text[:300],
+                    url=r["url"],
+                    source_name=r["source_name"],
+                ))
+
+        youtube_results = search_youtube_for_black_cards.invoke({"query": query})
+        for r in youtube_results:
             text = f"{r['title']} {r['text']}"
             if _is_promo_related(text):
                 raw_promos.append(RawPromo(

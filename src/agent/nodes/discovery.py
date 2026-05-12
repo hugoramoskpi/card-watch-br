@@ -6,15 +6,19 @@ from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
 
 from ..state import AgentState, CardBuzz
-from ...tools.reddit_tool import search_reddit_for_black_cards
+from ...tools.rss_tool import search_rss_for_black_cards
+from ...tools.youtube_tool import search_youtube_for_black_cards
 from ...tools.brave_tool import search_brave_for_promotions
 
 
 def discovery_node(state: AgentState) -> AgentState:
     llm = ChatAnthropic(model="claude-sonnet-4-6")
 
-    reddit_results = search_reddit_for_black_cards.invoke(
+    rss_results = search_rss_for_black_cards.invoke(
         {"query": "cartão black premium promoção 2026"}
+    )
+    youtube_results = search_youtube_for_black_cards.invoke(
+        {"query": "cartão crédito black premium promoção aprovação brasil 2026"}
     )
     brave_results = search_brave_for_promotions.invoke(
         {"query": "cartão crédito black premium promoção aprovação anuidade brasil 2026"}
@@ -22,7 +26,7 @@ def discovery_node(state: AgentState) -> AgentState:
 
     text_lines = [
         f"- {r['title']}: {r.get('description', '') or r.get('text', '')}"
-        for r in reddit_results + brave_results
+        for r in rss_results + youtube_results + brave_results
     ]
     all_text = "\n".join(text_lines) or "Sem menções encontradas"
 

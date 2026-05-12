@@ -33,17 +33,19 @@ def _base_state() -> AgentState:
 
 
 def test_discovery_node_populates_discovered_cards():
-    mock_reddit_results = [{"title": "Inter Black aprovado", "text": "", "url": "https://reddit.com/1", "score": 10, "source_name": "Reddit r/investimentos"}]
+    mock_rss_results = [{"title": "Inter Black aprovado", "text": "Aprovação com renda de 5k", "url": "https://infomoney.com.br/1", "source_name": "RSS: InfoMoney"}]
     mock_brave_results = [{"title": "C6 Carbon promoção", "description": "Aprovação fácil", "url": "https://hardmob.com/1", "source_name": "Brave Search"}]
 
     mock_llm_response = MagicMock()
-    mock_llm_response.content = '{"cards": [{"card_name": "Inter Black", "buzz_score": 8, "mentions_count": 2, "sources": ["Reddit r/investimentos", "Brave Search"]}]}'
+    mock_llm_response.content = '{"cards": [{"card_name": "Inter Black", "buzz_score": 8, "mentions_count": 2, "sources": ["RSS: InfoMoney", "Brave Search"]}]}'
 
-    with patch("src.agent.nodes.discovery.search_reddit_for_black_cards") as mock_reddit, \
+    with patch("src.agent.nodes.discovery.search_rss_for_black_cards") as mock_rss, \
+         patch("src.agent.nodes.discovery.search_youtube_for_black_cards") as mock_yt, \
          patch("src.agent.nodes.discovery.search_brave_for_promotions") as mock_brave, \
          patch("src.agent.nodes.discovery.ChatAnthropic") as MockLLM:
 
-        mock_reddit.invoke.return_value = mock_reddit_results
+        mock_rss.invoke.return_value = mock_rss_results
+        mock_yt.invoke.return_value = []
         mock_brave.invoke.return_value = mock_brave_results
         MockLLM.return_value.invoke.return_value = mock_llm_response
 
@@ -65,10 +67,12 @@ def test_promo_search_node_populates_raw_promos():
     mock_brave = [{"title": "Inter Black anuidade zero", "description": "Promoção válida por 12 meses", "url": "https://example.com", "source_name": "Brave Search"}]
 
     with patch("src.agent.nodes.promo_search.search_brave_for_promotions") as mock_b, \
-         patch("src.agent.nodes.promo_search.search_reddit_for_black_cards") as mock_r, \
+         patch("src.agent.nodes.promo_search.search_rss_for_black_cards") as mock_rss, \
+         patch("src.agent.nodes.promo_search.search_youtube_for_black_cards") as mock_yt, \
          patch("src.agent.nodes.promo_search.scrape_hardmob_for_black_cards") as mock_s:
         mock_b.invoke.return_value = mock_brave
-        mock_r.invoke.return_value = []
+        mock_rss.invoke.return_value = []
+        mock_yt.invoke.return_value = []
         mock_s.invoke.return_value = []
         result = promo_search_node(state)
 
