@@ -43,3 +43,28 @@ def test_brave_tool_returns_list():
     assert len(results) == 1
     assert results[0]["title"] == "C6 Carbon aprova com 15k de renda"
     assert results[0]["source_name"] == "Brave Search"
+
+
+from unittest.mock import MagicMock, patch
+from src.tools.scraper_tool import scrape_hardmob_for_black_cards
+
+def test_scraper_returns_list_on_success():
+    mock_thread = MagicMock()
+    mock_thread.inner_text.return_value = "Inter Black aprovado com facilidade"
+    mock_thread.get_attribute.return_value = "https://hardmob.com.br/thread/456"
+
+    with patch("src.tools.scraper_tool.sync_playwright") as mock_pw:
+        mock_browser = MagicMock()
+        mock_page = MagicMock()
+        mock_page.query_selector_all.return_value = [mock_thread]
+        mock_browser.new_page.return_value = mock_page
+        mock_pw.return_value.__enter__.return_value.chromium.launch.return_value = mock_browser
+        results = scrape_hardmob_for_black_cards.invoke({})
+
+    assert isinstance(results, list)
+
+def test_scraper_returns_empty_list_on_error():
+    with patch("src.tools.scraper_tool.sync_playwright") as mock_pw:
+        mock_pw.return_value.__enter__.return_value.chromium.launch.side_effect = Exception("network error")
+        results = scrape_hardmob_for_black_cards.invoke({})
+    assert results == []
