@@ -101,3 +101,29 @@ def test_cross_validate_requires_min_sources():
 def test_cross_validate_empty_when_no_promos():
     result = cross_validate_node(_base_state())
     assert result["validated_promos"] == []
+
+
+# ── Task 10: Persist & Alert ──────────────────────────────────────────────────
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from src.db.models import Base
+from src.agent.nodes.persist_alert import persist_alert_node
+
+def test_persist_alert_saves_new_promos_to_db():
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+
+    state = {**_base_state(), "validated_promos": [
+        {"card_name": "Nubank Ultra", "summary": "Cashback 5% por 3 meses", "confidence": 2,
+         "urls": ["https://reddit.com/1", "https://hardmob.com/1"], "sources": ["Reddit", "Hardmob"]}
+    ]}
+
+    with patch("src.agent.nodes.persist_alert.SessionLocal", return_value=db), \
+         patch("src.agent.nodes.persist_alert._send_telegram_alert") as mock_tg:
+        result = persist_alert_node(state)
+
+    assert len(result["alerts_sent"]) == 1
+    mock_tg.assert_called_once()
