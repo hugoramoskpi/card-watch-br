@@ -21,15 +21,20 @@ def search_reddit_for_black_cards(query: str) -> list[dict]:
     Returns:
         List of dicts with keys: title, text, url, score, source_name
     """
-    reddit = _get_reddit()
-    results = []
-    for sub in _SUBREDDITS:
-        for post in reddit.subreddit(sub).search(query, limit=10, sort="new", time_filter="day"):
-            results.append({
-                "title": post.title,
-                "text": post.selftext[:500],
-                "url": f"https://reddit.com{post.permalink}",
-                "score": post.score,
-                "source_name": f"Reddit r/{sub}",
-            })
-    return results
+    if not os.getenv("REDDIT_CLIENT_ID"):
+        return []
+    try:
+        reddit = _get_reddit()
+        results = []
+        for sub in _SUBREDDITS:
+            for post in reddit.subreddit(sub).search(query, limit=10, sort="new", time_filter="day"):
+                results.append({
+                    "title": post.title,
+                    "text": post.selftext[:500],
+                    "url": f"https://reddit.com{post.permalink}",
+                    "score": post.score,
+                    "source_name": f"Reddit r/{sub}",
+                })
+        return results
+    except Exception:
+        return []
