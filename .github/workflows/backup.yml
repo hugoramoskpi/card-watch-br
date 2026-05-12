@@ -1,0 +1,23 @@
+name: Backup on Push
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create backup tag
+        run: |
+          TAG="backup-$(date +'%Y%m%d-%H%M%S')"
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git tag $TAG
+          git push origin $TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
