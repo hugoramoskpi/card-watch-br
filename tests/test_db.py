@@ -40,3 +40,11 @@ def test_mark_alerted(db):
     mark_alerted(db, promo.id)
     db.refresh(promo)
     assert promo.alerted is True
+
+def test_get_dismissed_promotions(db):
+    upsert_promotion(db, "BRB DUX", "7 pontos por dólar", ["Reddit", "Hardmob"], 2, ["https://url.com"])
+    promos = get_promotions(db)
+    dismiss_promotion(db, promos[0].id)
+    dismissed = get_promotions(db, dismissed=True)
+    assert len(dismissed) == 1
+    assert dismissed[0].card_name == "BRB DUX"

@@ -1,9 +1,9 @@
 import hashlib
 from sqlalchemy.orm import Session
-from .models import Promotion, Cycle
+from .models import Promotion
 
 def _promotion_id(card_name: str, summary: str) -> str:
-    return hashlib.sha256(f"{card_name}:{summary}".encode()).hexdigest()[:16]
+    return hashlib.sha256(f"{card_name}:{summary}".encode()).hexdigest()
 
 def upsert_promotion(
     db: Session,
