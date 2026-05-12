@@ -74,3 +74,30 @@ def test_promo_search_node_populates_raw_promos():
 
     assert len(result["raw_promos"]) > 0
     assert result["raw_promos"][0]["card_name"] == "Inter Black"
+
+
+# ── Task 9: CrossValidate ─────────────────────────────────────────────────────
+
+from src.agent.nodes.cross_validate import cross_validate_node
+
+def test_cross_validate_requires_min_sources():
+    state = {**_base_state(), "raw_promos": [
+        {"card_name": "BTG Black", "text": "50k bônus na adesão", "url": "https://reddit.com/1", "source_name": "Reddit r/investimentos"},
+        {"card_name": "BTG Black", "text": "50k bônus na adesão de BTG", "url": "https://hardmob.com/1", "source_name": "Hardmob"},
+        {"card_name": "Cartão X Desconhecido", "text": "oferta especial", "url": "https://spam.com", "source_name": "Brave Search"},
+    ]}
+
+    mock_response = MagicMock()
+    mock_response.content = '[{"card_name": "BTG Black", "summary": "Bônus de 50k pontos na adesão ao BTG Black", "confidence": 2, "urls": ["https://reddit.com/1", "https://hardmob.com/1"], "sources": ["Reddit r/investimentos", "Hardmob"]}]'
+
+    with patch("src.agent.nodes.cross_validate.ChatAnthropic") as MockLLM:
+        MockLLM.return_value.invoke.return_value = mock_response
+        result = cross_validate_node(state)
+
+    assert len(result["validated_promos"]) == 1
+    assert result["validated_promos"][0]["card_name"] == "BTG Black"
+    assert result["validated_promos"][0]["confidence"] >= 2
+
+def test_cross_validate_empty_when_no_promos():
+    result = cross_validate_node(_base_state())
+    assert result["validated_promos"] == []
