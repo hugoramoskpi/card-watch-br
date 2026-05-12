@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-import telegram
+import threading
 from ..state import AgentState
 from ...db.database import SessionLocal
 from ...db.repository import upsert_promotion, mark_alerted
@@ -26,14 +26,24 @@ def _send_telegram_alert(promo_summary: str, card_name: str, confidence: int, ur
         f"📎 Fontes:\n{sources_text}"
     )
 
-    async def _send():
-        bot = telegram.Bot(token=token)
-        await bot.send_message(chat_id=chat_id, text=message, parse_mode="Markdown")
+    import telegram
 
-    try:
-        asyncio.run(_send())
-    except Exception as e:
-        logger.error("Erro ao enviar alerta Telegram: %s", e)
+    def _run_in_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            async def _send():
+                bot = telegram.Bot(token=token)
+                await bot.send_message(chat_id=chat_id, text=message, parse_mode="Markdown")
+            loop.run_until_complete(_send())
+        except Exception as e:
+            logger.error("Erro ao enviar alerta Telegram: %s", e)
+        finally:
+            loop.close()
+
+    thread = threading.Thread(target=_run_in_thread, daemon=True)
+    thread.start()
+    thread.join(timeout=10)
 
 
 def persist_alert_node(state: AgentState) -> AgentState:
