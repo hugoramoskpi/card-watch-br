@@ -17,10 +17,13 @@ def discovery_node(state: AgentState) -> AgentState:
         {"query": "cartão black premium promoção 2026"}
     )
     brave_results = search_brave_for_promotions.invoke(
-        {"query": "cartão black premium promoção aprovação hoje 2026 site:reddit.com OR site:hardmob.com.br"}
+        {"query": "cartão crédito black premium promoção aprovação anuidade brasil 2026"}
     )
 
-    text_lines = [f"- {r['title']}" for r in reddit_results + brave_results]
+    text_lines = [
+        f"- {r['title']}: {r.get('description', '') or r.get('text', '')}"
+        for r in reddit_results + brave_results
+    ]
     all_text = "\n".join(text_lines) or "Sem menções encontradas"
 
     response = llm.invoke([HumanMessage(content=f"""Analise as menções abaixo de cartões de crédito premium/black encontradas hoje.

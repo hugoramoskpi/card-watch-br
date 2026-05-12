@@ -19,7 +19,7 @@ def search_brave_for_promotions(query: str) -> list[dict]:
         "Accept-Encoding": "gzip",
         "X-Subscription-Token": os.environ.get("BRAVE_SEARCH_API_KEY", ""),
     }
-    params = {"q": query, "count": 10, "freshness": "pd"}
+    params = {"q": query, "count": 10, "freshness": "pw"}
     response = requests.get(_BRAVE_URL, headers=headers, params=params, timeout=10)
     response.raise_for_status()
     data = response.json()
