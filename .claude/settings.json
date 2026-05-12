@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python*)",
+      "Bash(uvicorn*)",
+      "Bash(pytest*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(python src/scheduler*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python hooks/pre-search.py 2>nul || echo Hook skipped"
+          }
+        ]
+      }
+    ]
+  }
+}

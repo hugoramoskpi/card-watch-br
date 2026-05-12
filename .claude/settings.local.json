@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\hugor\\\\Desktop\\\\aprendizado\" -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | Sort-Object FullName)",
+      "Bash(Test-Path \"C:\\\\Users\\\\hugor\\\\Desktop\\\\aprendizado\\\\.gitignore\")",
+      "Bash(Test-Path \"C:\\\\Users\\\\hugor\\\\Desktop\\\\aprendizado\\\\.env.example\")",
+      "Bash(git *)",
+      "PowerShell(pip index *)",
+      "PowerShell(pip install *)",
+      "Bash(python -m pytest tests/test_db.py -v)",
+      "Bash(python -m pytest tests/test_tools.py::test_reddit_tool_returns_list -v)",
+      "Bash(python -m pytest tests/test_tools.py::test_scraper_returns_list_on_success tests/test_tools.py::test_scraper_returns_empty_list_on_error -v)",
+      "Bash(python -m pytest tests/test_tools.py -v)",
+      "Bash(python -m pytest tests/test_nodes.py::test_graph_compiles -v)",
+      "Bash(python -m pytest tests/test_nodes.py -v)",
+      "Bash(python -m pytest tests/test_nodes.py::test_discovery_node_populates_discovered_cards -v)",
+      "Bash(python -m pytest tests/test_nodes.py::test_promo_search_node_populates_raw_promos -v)",
+      "Bash(python -m pytest tests/test_nodes.py::test_cross_validate_requires_min_sources tests/test_nodes.py::test_cross_validate_empty_when_no_promos -v)",
+      "Bash(python -m pytest tests/test_nodes.py::test_persist_alert_saves_new_promos_to_db -v)",
+      "PowerShell(ls \"C:\\\\Users\\\\hugor\\\\Desktop\\\\aprendizado\\\\tests\" 2>$null; if \\(-not $?\\) { \"tests dir does not exist\" })",
+      "Bash(python -m pytest tests/test_bot.py -v)",
+      "Bash(python -c \"import telegram; print\\(telegram.__version__\\)\")",
+      "PowerShell(New-Item *)",
+      "Bash(python -c \"import apscheduler; print\\(apscheduler.__version__\\)\")",
+      "Bash(python -c \"from src.scheduler import run_cycle; print\\('Import OK'\\)\")",
+      "Bash(python -m pytest tests/ -v)"
+    ]
+  }
+}
