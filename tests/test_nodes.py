@@ -52,3 +52,25 @@ def test_discovery_node_populates_discovered_cards():
     assert len(result["discovered_cards"]) == 1
     assert result["discovered_cards"][0]["card_name"] == "Inter Black"
     assert result["cycle_id"] != ""
+
+
+# ── Task 8: PromoSearch ────────────────────────────────────────────────────────
+
+from src.agent.nodes.promo_search import promo_search_node
+
+def test_promo_search_node_populates_raw_promos():
+    state = {**_base_state(), "discovered_cards": [
+        {"card_name": "Inter Black", "buzz_score": 8, "mentions_count": 2, "sources": ["Reddit"]}
+    ]}
+    mock_brave = [{"title": "Inter Black anuidade zero", "description": "Promoção válida por 12 meses", "url": "https://example.com", "source_name": "Brave Search"}]
+
+    with patch("src.agent.nodes.promo_search.search_brave_for_promotions") as mock_b, \
+         patch("src.agent.nodes.promo_search.search_reddit_for_black_cards") as mock_r, \
+         patch("src.agent.nodes.promo_search.scrape_hardmob_for_black_cards") as mock_s:
+        mock_b.invoke.return_value = mock_brave
+        mock_r.invoke.return_value = []
+        mock_s.invoke.return_value = []
+        result = promo_search_node(state)
+
+    assert len(result["raw_promos"]) > 0
+    assert result["raw_promos"][0]["card_name"] == "Inter Black"
